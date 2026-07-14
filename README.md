@@ -143,10 +143,9 @@ Thank you [Beralt](https://github.com/beralt) for your hard work on [horepg](htt
 
 Also thanks to:
 - [ldymek](https://github.com/ldymek) for providing the configuration information for `upc-pl`.
+- [BertusG](https://github.com/BertusG) for the ideas behind the programme poster images, the Dutch-to-DVB genre mapping and
+  the scheduled database vacuum (first proposed in [PR #9](https://github.com/jbogers/ziggogo-epg/pull/9)).
 
 ## TODO's
 
 - Add a setup.cfg/setup.py file to make the program installable as a Python module for the people who perfer that run mode.
-- Implement an optional category translation similar to 'https://github.com/beralt/horepg/blob/master/horepg/xmltvdoc.py' in 
-  XMLTVWriter to have proper category mapping in TVHeadend.
-  - Translated categories should be additionally added as the original data may be applicable for other applications.
