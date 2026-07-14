@@ -109,6 +109,14 @@ def main():
     )
     tweak_arg_group.add_argument("--generate-only", action="store_true", help="generate XMLTV from an existing cache database")
     tweak_arg_group.add_argument(
+        "--date-categories",
+        default=None,
+        type=str,
+        help="only include the production year for programmes that have one of these (comma separated) categories, "
+        "for example 'film'. By default the production year is included for all programmes",
+        metavar="CATEGORY[,CATEGORY]",
+    )
+    tweak_arg_group.add_argument(
         "--vacuum-interval",
         default=7,
         type=int,
@@ -135,6 +143,10 @@ def main():
         except KeyError:
             logging.error(f"Environment variable '{args.tvh_password_env}' given by --tvh-password-env is not set.")
             return 1
+
+    date_categories = None
+    if args.date_categories is not None:
+        date_categories = [category.strip() for category in args.date_categories.split(",") if category.strip()]
 
     database_file = os.path.normpath(os.path.join(args.database_location, "ziggogoepg_cache.sqlite3"))
     module_location = os.path.dirname(os.path.abspath(__file__))
@@ -164,6 +176,7 @@ def main():
             database_file=database_file,
             timezone=args.timezone,
             vacuum_interval=args.vacuum_interval,
+            date_categories=date_categories,
         )
     except GrabException as ex:
         logging.error(str(ex))

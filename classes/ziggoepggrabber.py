@@ -56,6 +56,7 @@ class ZiggoGoEpgGrabber:
         database_file="ziggogoepg_cache.sqlite3",
         timezone=None,
         vacuum_interval=7,
+        date_categories=None,
     ):
         """
         Initialize ZiggoGoEpgGrabber
@@ -65,6 +66,7 @@ class ZiggoGoEpgGrabber:
         :param timezone: Timezone string supported by pytz
         :param database_file: The name and location of teh database file to use
         :param vacuum_interval: Number of days between database vacuums, 0 vacuums on every grab
+        :param date_categories: Only include the production year for programmes with one of these categories, None includes all
         """
         self._tv_system_io = tv_system_io
 
@@ -100,6 +102,7 @@ class ZiggoGoEpgGrabber:
         self._scan_days = scan_days
         self._timezone = pytz.timezone(timezone)
         self._vacuum_interval = vacuum_interval
+        self._date_categories = date_categories
 
         # Create or open database
         self._db = sqlite3.connect(database_file)
@@ -181,7 +184,7 @@ class ZiggoGoEpgGrabber:
         else:
             logging.info("Generate only: skip grabbing new EPG data")
 
-        xmltv_writer = XMLTVWriter(database_connection=self._db)
+        xmltv_writer = XMLTVWriter(database_connection=self._db, date_categories=self._date_categories)
         xmltv = xmltv_writer.generate_xmltv()
 
         self._tv_system_io.write_xmltv(data=xmltv)

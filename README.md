@@ -96,6 +96,13 @@ The following options are tweaks that can be used by advanced users:
 - `--database-location`: By default the `ziggoepg_cache.sqlite` file is stored in the working directory of the script. Should you
   desire a different location (for example, a file system that is better suited to handle a database file), an alternative path
   (but not filename) can be specified here.
+- `--date-categories`: By default the production year of every programme is written to the XMLTV file when it is known. However,
+  the ZiggoGo EPG often reports stale or generic production years for episodes of series (for example, last year's production
+  year on a live show), which TVHeadend then displays as an incorrect year behind the title. With this option the production
+  year is only written for programmes that have one of the given (comma separated, case-insensitive) categories. For the Dutch
+  EPG, `--date-categories film` limits the production year to movies, where it is generally accurate and most useful. Since the
+  filter is applied when the XMLTV file is generated, changing this option takes effect on the next run (a re-grab is not
+  needed and `--generate-only` is sufficient).
 - `--vacuum-interval`: The number of days between vacuums (defragmentation rebuilds) of the cache database. Vacuuming keeps
   the database from getting fragmented, but rebuilds the entire database file every time. The default of 7 vacuums at most
   once a week. Set to 0 to vacuum on every grab (the old behavior).

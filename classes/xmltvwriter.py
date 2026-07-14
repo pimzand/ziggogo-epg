@@ -8,6 +8,8 @@ import json
 import logging
 import sqlite3
 
+from typing import List, Optional
+
 from lxml import etree
 
 
@@ -205,14 +207,19 @@ class XMLTVWriter:
         "magazines / reports / documentary": "Social / Political issues / Economics",
     }
 
-    def __init__(self, database_connection: sqlite3.Connection):
+    def __init__(self, database_connection: sqlite3.Connection, date_categories: Optional[List[str]] = None):
         """
         Initialize XMLTVWriter.
 
         :param database_connection: An opened SQLite database connection to the EPG data
+        :param date_categories: Only include the production year for programmes that have one of these categories
+                                (matched case-insensitively). If None, the production year is included for all programmes.
         """
         self._db = database_connection
         self._dbcur = self._db.cursor()
+        self._date_categories = None
+        if date_categories is not None:
+            self._date_categories = {category.lower() for category in date_categories}
 
         # NL is hardcoded as it is the only language ZiggoGo provides.
         self._lang = "nl"
@@ -290,7 +297,12 @@ class XMLTVWriter:
                             etree.SubElement(credits, "producer").text = producers
 
                 if "date" in details:
-                    etree.SubElement(programme, "date").text = details["date"]
+                    # The date (production year) of series episodes is often stale or generic upstream, causing
+                    # TVHeadend to display incorrect years. Optionally limit the date to given categories (e.g. 'film').
+                    if self._date_categories is None or not self._date_categories.isdisjoint(
+                        category.lower() for category in details.get("categories", [])
+                    ):
+                        etree.SubElement(programme, "date").text = details["date"]
 
                 if "categories" in details:
                     # Write the original categories, as they may be useful to other applications
