@@ -159,6 +159,8 @@ class ZiggoGoEpgGrabber:
 
         self._grab_start_time = int(time.time())
 
+        self._tv_system_io.preflight()
+
         if not generate_only:
             channel_ids = self._grab_channels()
             self._grab_programmes(channel_ids=channel_ids)

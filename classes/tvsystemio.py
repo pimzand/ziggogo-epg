@@ -23,6 +23,9 @@ class TVSystemIo:
         """Get the list of channels to grab the EPG for"""
         raise NotImplementedError()
 
+    def preflight(self):
+        """Verify the XMLTV output destination is usable, so a misconfiguration fails before a lengthy grab"""
+
     def write_xmltv(self, data: bytes):
         """Write the XMLTV EPG to storage"""
         raise NotImplementedError()
@@ -134,6 +137,25 @@ class TVHeadendIo(TVSystemIo):
             f"using '{self.DEFAULT_XMLTV_SOCKET_PATH}'."
         )
         return self.DEFAULT_XMLTV_SOCKET_PATH
+
+    def preflight(self):
+        """Check that the xmltv socket accepts connections, so a misconfiguration fails before a lengthy grab"""
+        if self._xmltv_socket_path is None:
+            self._xmltv_socket_path = self._discover_xmltv_socket()
+
+        logging.info(f"Checking that the xmltv socket at '{self._xmltv_socket_path}' accepts connections...")
+        try:
+            sock = socket.socket(socket.AF_UNIX)
+            try:
+                sock.connect(self._xmltv_socket_path)
+            finally:
+                sock.close()
+
+        except OSError:
+            raise TVSystemIoException(
+                f"Cannot connect to the xmltv socket at '{self._xmltv_socket_path}'. Is the path correct, "
+                f"is TVHeadend running and was the XMLTV EPG grabber enabled?"
+            )
 
     def write_xmltv(self, data: bytes):
         """Write the XMLTV EPG to TVHeadend directly"""
