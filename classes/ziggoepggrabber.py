@@ -232,8 +232,10 @@ class ZiggoGoEpgGrabber:
         logging.info("Getting guide overview data...")
 
         # Determine start point using UTC time as segment codes are in UTC
-        grab_start = datetime.datetime.utcfromtimestamp(self._grab_start_time)
-        segment_datetime = datetime.datetime(year=grab_start.year, month=grab_start.month, day=grab_start.day)
+        grab_start = datetime.datetime.fromtimestamp(self._grab_start_time, tz=datetime.timezone.utc)
+        segment_datetime = datetime.datetime(
+            year=grab_start.year, month=grab_start.month, day=grab_start.day, tzinfo=datetime.timezone.utc
+        )
         end_datetime = segment_datetime + datetime.timedelta(days=self._scan_days)
 
         # Set up session with automatic retries
