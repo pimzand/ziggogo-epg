@@ -53,6 +53,8 @@ ZiggoGo EPG supports the following basic options:
   the servers. To reduce grabbing time, memory use and storgae requirements, this value can be lowered.
 - `-f`, `--file-mode`: Runs the grabber in file mode instead of the default TVHeadend mode. See the
   [TVHeadend mode](#tvheadend-mode) and [Standalone mode](#standalone-mode) sections for a detailed explanation.
+- `-q`, `--quiet`: Only log warnings and errors, suppressing the progress messages. Useful when running the grabber
+  non-interactively, for example from cron or a systemd timer.
 
 The following options are supported in TVHeadend mode:
 - `--tvh-host`: Give the hostname of the TVHeadend server. Defaults to `localhost`, which should be safe as writing the XMLTV file
