@@ -105,7 +105,11 @@ class TVHeadendIo(TVSystemIo):
             raise TVSystemIoException(f"Error getting channel list from TVHeadend. The list was not structured properly.")
 
         if not channellist:
-            logging.warning(f"No channels found on a network named '{self._network}'.")
+            available = sorted({service["network"] for service in servicedata["entries"] if service.get("network")})
+            logging.warning(
+                f"No channels found on a network named '{self._network}'. "
+                f"Available networks: {', '.join(repr(name) for name in available) or 'none'}."
+            )
         return channellist
 
     def _discover_xmltv_socket(self) -> str:
