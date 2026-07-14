@@ -82,6 +82,9 @@ class ZiggoGoEpgGrabber:
         except KeyError:
             raise GrabException(f"Configuration file {configuration_file} is missing the settings for the urls to grab")
 
+        # Optional URL, programme icons are skipped if not configured
+        self._epg_img_detail_url = configuration["urls"].get("epg_img_detail")
+
         # Use timezone from configuration file if none was given
         if timezone is None:
             try:
@@ -368,6 +371,10 @@ class ZiggoGoEpgGrabber:
                     details["desc"] = programmedata["longDescription"]
                 elif "shortDescription" in programmedata:
                     details["desc"] = programmedata["shortDescription"]
+
+                # The image service needs the eventId (full crid+imi string), not the programme id
+                if self._epg_img_detail_url and "eventId" in programmedata and "imageVersion" in programmedata:
+                    details["img"] = self._epg_img_detail_url.format(programmedata["eventId"], programmedata["imageVersion"])
 
                 credits = {}
                 if "actors" in programmedata:

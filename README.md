@@ -114,6 +114,9 @@ The following configuration options are available:
     one `{}` entry, which is to be placed in the location of the URL where the program id is normally placed. A program id is a
     long string that is associated with the program. This value can be seen both in the segment data and from observing the URL
     called by the online viewing application from your local provider.
+  - `epg_img_detail`: Optional. The URL where the grabber can get the program poster images. The URL must have exactly two `{}`
+    entries: the first is filled in with the eventId (the full crid+imi string as found in the program details) and the second
+    with the imageVersion. If this URL is not configured, no program icons are added to the XMLTV file.
 - `timezone`: The timezone that is used for creating program entries in the XMLTV file. This timezone must be supported by
   `pytz`. See the explanation of the `--timezone` option for what is allowed here.
 

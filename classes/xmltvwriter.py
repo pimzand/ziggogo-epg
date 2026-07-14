@@ -106,6 +106,9 @@ class XMLTVWriter:
                     for category in details["categories"]:
                         etree.SubElement(programme, "category", attrib={"lang": self._lang}).text = category
 
+                if "img" in details:
+                    etree.SubElement(programme, "icon", attrib={"src": details["img"]})
+
                 if "country" in details:
                     etree.SubElement(programme, "country").text = details["country"]
 
