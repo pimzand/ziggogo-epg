@@ -84,6 +84,13 @@ def main():
         "--database-location", default=".", type=str, help="path where the cache database will be created", metavar="PATH"
     )
     tweak_arg_group.add_argument("--generate-only", action="store_true", help="generate XMLTV from an existing cache database")
+    tweak_arg_group.add_argument(
+        "--vacuum-interval",
+        default=7,
+        type=int,
+        help="number of days between cache database vacuums, 0 vacuums on every grab",
+        metavar="DAYS",
+    )
 
     args = parser.parse_args()
 
@@ -113,6 +120,7 @@ def main():
             configuration_file=configuration_file,
             database_file=database_file,
             timezone=args.timezone,
+            vacuum_interval=args.vacuum_interval,
         )
     except GrabException as ex:
         logging.error(str(ex))

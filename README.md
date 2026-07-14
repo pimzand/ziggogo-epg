@@ -87,6 +87,9 @@ The following options are tweaks that can be used by advanced users:
 - `--database-location`: By default the `ziggoepg_cache.sqlite` file is stored in the working directory of the script. Should you
   desire a different location (for example, a file system that is better suited to handle a database file), an alternative path
   (but not filename) can be specified here.
+- `--vacuum-interval`: The number of days between vacuums (defragmentation rebuilds) of the cache database. Vacuuming keeps
+  the database from getting fragmented, but rebuilds the entire database file every time. The default of 7 vacuums at most
+  once a week. Set to 0 to vacuum on every grab (the old behavior).
 - `--generate-only`: Great for testing the export of the XMLTV data. No contact is made with the ZiggoGo servers, the XMLTV
   generation is done fully from the existing `ziggoepg_cache.sqlite` file. Any useful application of this mode requires ZiggoGo
   EPG to have run in a normal mode at least once before. Note that this option is ignored if the `--write-channel-list` option

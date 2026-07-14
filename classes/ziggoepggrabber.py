@@ -55,6 +55,7 @@ class ZiggoGoEpgGrabber:
         configuration_file="ziggo-nl.yml",
         database_file="ziggogoepg_cache.sqlite3",
         timezone=None,
+        vacuum_interval=7,
     ):
         """
         Initialize ZiggoGoEpgGrabber
@@ -63,6 +64,7 @@ class ZiggoGoEpgGrabber:
         :param scan_days: Number of days to scan for
         :param timezone: Timezone string supported by pytz
         :param database_file: The name and location of teh database file to use
+        :param vacuum_interval: Number of days between database vacuums, 0 vacuums on every grab
         """
         self._tv_system_io = tv_system_io
 
@@ -97,6 +99,7 @@ class ZiggoGoEpgGrabber:
         # Set up options statically (for now)
         self._scan_days = scan_days
         self._timezone = pytz.timezone(timezone)
+        self._vacuum_interval = vacuum_interval
 
         # Create or open database
         self._db = sqlite3.connect(database_file)
@@ -135,6 +138,14 @@ class ZiggoGoEpgGrabber:
             )
         """
         )
+        self._dbcur.execute(
+            """
+            CREATE TABLE IF NOT EXISTS metadata (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+        """
+        )
 
     def __del__(self):
         """Cleanup"""
@@ -154,7 +165,17 @@ class ZiggoGoEpgGrabber:
             self._grab_programmedetails()
 
             logging.info("Cleaning up database...")
-            self._dbcur.execute("VACUUM")
+            row = self._dbcur.execute("SELECT value FROM metadata WHERE key = 'last_vacuum'").fetchone()
+            last_vacuum = int(row[0]) if row else 0
+            days_since_vacuum = (self._grab_start_time - last_vacuum) / 86400
+            if days_since_vacuum >= self._vacuum_interval:
+                self._dbcur.execute("VACUUM")
+                self._dbcur.execute(
+                    "INSERT OR REPLACE INTO metadata (key, value) VALUES ('last_vacuum', ?)", (str(self._grab_start_time),)
+                )
+                self._db.commit()
+            else:
+                logging.info(f"Skipping database vacuum, last run was {days_since_vacuum:.1f} days ago")
         else:
             logging.info("Generate only: skip grabbing new EPG data")
 
