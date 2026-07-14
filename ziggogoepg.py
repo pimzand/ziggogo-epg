@@ -6,6 +6,7 @@ Grabber for the EPG hosted by Ziggo on ziggogo.tv
 """
 import argparse
 import logging
+import os
 import os.path
 import sys
 
@@ -38,18 +39,43 @@ def main():
     tvh_arg_group.add_argument(
         "--tvh-port", default=9981, type=int, help="portnumber of TVHeadend, used for getting the channel list", metavar="PORT_NR"
     )
-    tvh_arg_group.add_argument(
+    tvh_username_group = tvh_arg_group.add_mutually_exclusive_group()
+    tvh_username_group.add_argument(
         "--tvh-username", default="", type=str, help="username of TVHeadend, used for getting the channel list", metavar="USER"
     )
-    tvh_arg_group.add_argument(
+    tvh_username_group.add_argument(
+        "--tvh-username-env",
+        default=None,
+        type=str,
+        help="name of the environment variable to read the TVHeadend username from",
+        metavar="ENV_VAR",
+    )
+    tvh_password_group = tvh_arg_group.add_mutually_exclusive_group()
+    tvh_password_group.add_argument(
         "--tvh-password", default="", type=str, help="password of TVHeadend, used for getting the channel list", metavar="PASS"
+    )
+    tvh_password_group.add_argument(
+        "--tvh-password-env",
+        default=None,
+        type=str,
+        help="name of the environment variable to read the TVHeadend password from, "
+        "avoids the password being visible on the command line",
+        metavar="ENV_VAR",
     )
     tvh_arg_group.add_argument(
         "--tvh-socket",
-        default="/home/hts/.hts/tvheadend/epggrab/xmltv.sock",
+        default=None,
         type=str,
-        help="path to xmltv socket of TVHeadend, used to write the XMLTV data to",
+        help="path to xmltv socket of TVHeadend, used to write the XMLTV data to "
+        f"(default: ask TVHeadend, falling back to {TVHeadendIo.DEFAULT_XMLTV_SOCKET_PATH})",
         metavar="SOCKET",
+    )
+    tvh_arg_group.add_argument(
+        "--tvh-network",
+        default=None,
+        type=str,
+        help="only use channels that have a service on the network with this name (default: use all channels)",
+        metavar="NETWORK",
     )
 
     file_arg_group = parser.add_argument_group(
@@ -94,6 +120,21 @@ def main():
 
     args = parser.parse_args()
 
+    tvh_username = args.tvh_username
+    if args.tvh_username_env is not None:
+        try:
+            tvh_username = os.environ[args.tvh_username_env]
+        except KeyError:
+            logging.error(f"Environment variable '{args.tvh_username_env}' given by --tvh-username-env is not set.")
+            return 1
+    tvh_password = args.tvh_password
+    if args.tvh_password_env is not None:
+        try:
+            tvh_password = os.environ[args.tvh_password_env]
+        except KeyError:
+            logging.error(f"Environment variable '{args.tvh_password_env}' given by --tvh-password-env is not set.")
+            return 1
+
     database_file = os.path.normpath(os.path.join(args.database_location, "ziggogoepg_cache.sqlite3"))
     module_location = os.path.dirname(os.path.abspath(__file__))
     configuration_file = os.path.normpath(os.path.join(module_location, f"{args.configuration}.yml"))
@@ -108,9 +149,10 @@ def main():
         tv_system_io = TVHeadendIo(
             host=args.tvh_host,
             port=args.tvh_port,
-            username=args.tvh_username,
-            password=args.tvh_password,
+            username=tvh_username,
+            password=tvh_password,
             xmltv_socket_path=args.tvh_socket,
+            network=args.tvh_network,
         )
 
     try:

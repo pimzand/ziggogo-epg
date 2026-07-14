@@ -61,9 +61,16 @@ The following options are supported in TVHeadend mode:
   TVHeadend to run on a different port.
 - `--tvh-username`: The username to use for connecting to TVHeadend. This can (and should) be a user with limited access.
 - `--tvh-password`: The password to use for connecting to TVHeadend. Note that this password can be seen on the command line.
-- `--tvh-socket SOCKET`: The path to xmltv socket of TVHeadend, used to write the XMLTV data. Defaults to
+- `--tvh-username-env`: The name of an environment variable to read the TVHeadend username from. Can be used instead of
+  `--tvh-username`.
+- `--tvh-password-env`: The name of an environment variable to read the TVHeadend password from. Can be used instead of
+  `--tvh-password` to avoid the password being visible on the command line.
+- `--tvh-socket SOCKET`: The path to xmltv socket of TVHeadend, used to write the XMLTV data. By default the path is
+  requested from the TVHeadend API (which requires a user with admin rights), falling back to
   `/home/hts/.hts/tvheadend/epggrab/xmltv.sock` which should work for any installation that installed TVHeadend under the
   recommended system user. Note that this socket file _only_ exists if the XMLTV grabber was enabled in TVHeadend.
+- `--tvh-network NETWORK`: Only use channels that have at least one service on the network with this name (for example
+  `Ziggo`). The name is compared case-insensitively. By default all TVHeadend channels are used.
 
 The following options are supported in standalone file mode:
 - `--channel-file`: Sets the filename of the file to read (or write, see `--write-channel-list`) the channel list from. This can
