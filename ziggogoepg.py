@@ -18,15 +18,13 @@ LOGGING_FORMAT = "%(asctime)s [%(levelname)8s]: %(message)s"
 
 def main():
     """Program main entry point"""
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO, format=LOGGING_FORMAT)
-    logging.info("Starting ZiggoGo EPG")
-
     parser = argparse.ArgumentParser(description="ZiggoGo EPG grabber", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument(
         "-s", "--configuration", default="ziggo-nl", type=str, help="configuration to use", metavar="CONFIGURATION"
     )
     parser.add_argument("-n", "--scan-days", default=14, type=int, help="number of days to grab", metavar="DAYS")
     parser.add_argument("-f", "--file-mode", action="store_true", help="use file mode instead of TVHeadend mode")
+    parser.add_argument("-q", "--quiet", action="store_true", help="only log warnings and errors")
 
     tvh_arg_group = parser.add_argument_group("tvheadend mode", description="Arguments used in TVHeadend mode only (the default)")
     tvh_arg_group.add_argument(
@@ -119,6 +117,9 @@ def main():
     )
 
     args = parser.parse_args()
+
+    logging.basicConfig(stream=sys.stdout, level=logging.WARNING if args.quiet else logging.INFO, format=LOGGING_FORMAT)
+    logging.info("Starting ZiggoGo EPG")
 
     tvh_username = args.tvh_username
     if args.tvh_username_env is not None:
