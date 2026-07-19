@@ -57,6 +57,7 @@ class ZiggoGoEpgGrabber:
         timezone=None,
         vacuum_interval=7,
         date_categories=None,
+        details_refresh_hours=24,
     ):
         """
         Initialize ZiggoGoEpgGrabber
@@ -67,6 +68,7 @@ class ZiggoGoEpgGrabber:
         :param database_file: The name and location of teh database file to use
         :param vacuum_interval: Number of days between database vacuums, 0 vacuums on every grab
         :param date_categories: Only include the production year for programmes with one of these categories, None includes all
+        :param details_refresh_hours: Re-fetch the cached details of programmes starting within this many hours, 0 disables
         """
         self._tv_system_io = tv_system_io
 
@@ -103,6 +105,7 @@ class ZiggoGoEpgGrabber:
         self._timezone = pytz.timezone(timezone)
         self._vacuum_interval = vacuum_interval
         self._date_categories = date_categories
+        self._details_refresh_hours = details_refresh_hours
 
         # Create or open database
         self._db = sqlite3.connect(database_file)
@@ -352,6 +355,25 @@ class ZiggoGoEpgGrabber:
         logging.info("Cleaning up programme details table...")
         self._dbcur.execute("DELETE FROM programmedetails WHERE id NOT IN (SELECT id FROM programmes)")
         self._db.commit()
+
+        # Details of programmes about to air may have been updated after they were cached without their programme id
+        # changing (for example sports fixtures where the teams are only known close to the broadcast), so expire the
+        # details of programmes that air soon to have them re-fetched below.
+        if self._details_refresh_hours > 0:
+            grab_start = datetime.datetime.fromtimestamp(self._grab_start_time, self._timezone)
+            refresh_end = grab_start + datetime.timedelta(hours=self._details_refresh_hours)
+            self._dbcur.execute(
+                "DELETE FROM programmedetails WHERE id IN ("
+                "SELECT id FROM programmes WHERE substr(starttime, 1, 14) < ? AND substr(endtime, 1, 14) > ?"
+                ")",
+                (refresh_end.strftime("%Y%m%d%H%M%S"), grab_start.strftime("%Y%m%d%H%M%S")),
+            )
+            if self._dbcur.rowcount > 0:
+                logging.info(
+                    f"Refreshing details of {self._dbcur.rowcount} programmes starting within "
+                    f"{self._details_refresh_hours} hours..."
+                )
+            self._db.commit()
 
         # Grab missing details (using separate cursor)
         logging.info("Getting missing programme details...")

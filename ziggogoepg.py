@@ -123,6 +123,14 @@ def main():
         help="number of days between cache database vacuums, 0 vacuums on every grab",
         metavar="DAYS",
     )
+    tweak_arg_group.add_argument(
+        "--details-refresh-hours",
+        default=24,
+        type=int,
+        help="re-fetch the cached details of programmes starting within this many hours, so late updates by ZiggoGo "
+        "(such as the teams playing in a sports broadcast) are picked up. Set to 0 to never re-fetch details",
+        metavar="HOURS",
+    )
 
     args = parser.parse_args()
 
@@ -177,6 +185,7 @@ def main():
             timezone=args.timezone,
             vacuum_interval=args.vacuum_interval,
             date_categories=date_categories,
+            details_refresh_hours=args.details_refresh_hours,
         )
     except GrabException as ex:
         logging.error(str(ex))

@@ -106,6 +106,12 @@ The following options are tweaks that can be used by advanced users:
 - `--vacuum-interval`: The number of days between vacuums (defragmentation rebuilds) of the cache database. Vacuuming keeps
   the database from getting fragmented, but rebuilds the entire database file every time. The default of 7 vacuums at most
   once a week. Set to 0 to vacuum on every grab (the old behavior).
+- `--details-refresh-hours`: The details of a programme (sub-title, description, credits, etc.) are normally fetched once and
+  cached until the programme drops out of the guide. However, ZiggoGo sometimes updates these details after they are first
+  published, for example a sports broadcast where the teams playing are only announced shortly before the match ("Finale:
+  n.n.b. - n.n.b."). To pick up such late updates, the cached details of programmes starting within the given number of hours
+  are re-fetched on every grab. The default of 24 covers programmes airing within a day. Set to 0 to never re-fetch details
+  (the old behavior).
 - `--generate-only`: Great for testing the export of the XMLTV data. No contact is made with the ZiggoGo servers, the XMLTV
   generation is done fully from the existing `ziggoepg_cache.sqlite` file. Any useful application of this mode requires ZiggoGo
   EPG to have run in a normal mode at least once before. Note that this option is ignored if the `--write-channel-list` option
